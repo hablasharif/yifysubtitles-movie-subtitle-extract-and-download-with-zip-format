@@ -1,8 +1,8 @@
-
 from bs4 import BeautifulSoup
 from lxml import html
 import os
 import requests
+from concurrent.futures import ThreadPoolExecutor
 
 # Base URL
 base_url = "https://yifysubtitles.ch/"
@@ -12,8 +12,8 @@ if not os.path.exists("mysubfiles"):
     os.makedirs("mysubfiles")
 
 # Function to download subtitles from a list of URLs
-def download_subtitles(url_list):
-    for url in url_list:
+def download_subtitles(url):
+    try:
         # Send an HTTP GET request to the URL
         response = requests.get(url)
 
@@ -70,11 +70,14 @@ def download_subtitles(url_list):
                 print("No English subtitles found on the page.")
         else:
             print("Failed to retrieve the web page. Status code:", response.status_code)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 # List of URLs to download subtitles from
 url_list = [
-"https://yifysubtitles.ch/movie-imdb/tt0111161","https://yifysubtitles.ch/movie-imdb/tt0068646","https://yifysubtitles.ch/movie-imdb/tt0468569","https://yifysubtitles.ch/movie-imdb/tt0071562","https://yifysubtitles.ch/movie-imdb/tt0050083","https://yifysubtitles.ch/movie-imdb/tt0108052"
+    "https://yifysubtitles.ch/movie-imdb/tt0111161/"
 ]
 
-# Call the function to download subtitles
-download_subtitles(url_list)
+# Use a ThreadPoolExecutor for concurrent downloads
+with ThreadPoolExecutor(max_workers=5) as executor:
+    executor.map(download_subtitles, url_list)
